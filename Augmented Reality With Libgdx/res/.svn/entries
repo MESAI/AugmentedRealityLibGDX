@@ -1,0 +1,52 @@
+10
+
+dir
+2
+https://dynamic-duo-ar-business.googlecode.com/svn/trunk/res
+https://dynamic-duo-ar-business.googlecode.com/svn
+
+
+
+2014-02-12T16:21:51.853432Z
+2
+mina.workspace@gmail.com
+
+
+svn:special svn:externals svn:needs-lock
+
+
+
+
+
+
+
+
+
+
+
+9b4541e4-9688-481e-4d00-98a48c8f57e6
+
+drawable-hdpi
+dir
+
+drawable-ldpi
+dir
+
+drawable-mdpi
+dir
+
+drawable-xhdpi
+dir
+
+layout
+dir
+
+values
+dir
+
+values-sw600dp
+dir
+
+values-sw720dp-land
+dir
+

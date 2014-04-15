@@ -1,0 +1,104 @@
+package com.dynamicduo.ericsoncontest;
+
+import libgdx.Renderer;
+import network.ServerAPI;
+import android.graphics.PixelFormat;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.view.SurfaceView;
+import android.view.View;
+import android.widget.FrameLayout;
+import cameracontrol.AndroidDeviceCameraController;
+
+import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
+import combinedview.CameraActivity;
+
+public class MainActivity extends CameraActivity {
+
+	private AndroidDeviceCameraController cameraControl;
+	private Renderer renderer;
+	private View view;
+
+	static String tag1 = "cart1";
+	static String tag2 = "1830ed7224"; // need to be set
+	static String myTag = "1830ed70bc";
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+
+		AndroidApplicationConfiguration cfg = new AndroidApplicationConfiguration();
+		cfg.useGL20 = false;
+		cfg.r = 8;
+		cfg.g = 8;
+		cfg.b = 8;
+		cfg.a = 8;
+
+		// Camera Part
+
+		cameraControl = new AndroidDeviceCameraController(this);
+
+		view = initializeForView(renderer = new Renderer(this, cameraControl),
+				cfg);
+		// keep the original screen size
+		origWidth = graphics.getWidth();
+		origHeight = graphics.getHeight();
+
+		if (graphics.getView() instanceof SurfaceView) {
+			SurfaceView glView = (SurfaceView) graphics.getView();
+			// force alpha channel - I'm not sure we need this as the GL surface
+			// is already using alpha channel
+			glView.getHolder().setFormat(PixelFormat.RGBA_8888);
+		}
+		// we don't want the screen to turn off during the long image saving
+		// process
+
+		graphics.getView().setKeepScreenOn(true);
+
+		main = (FrameLayout) findViewById(R.id.main_layout);
+		main.addView(view, 0);
+		new UpdateTagLocation().execute();
+	}
+
+	private class UpdateTagLocation extends AsyncTask<Void, Void, Void> {
+
+		@Override
+		protected Void doInBackground(Void... params) {
+
+			while (true) {
+				try{
+				if (renderer.screen != null
+						&& renderer.screen.getShapeMap() != null
+						&& renderer.screen.getShapeMap().get(tag1) != null
+						&& renderer.screen.getShapeMap().get(tag2) != null) {
+					double[] myLocation = ServerAPI.getTagLocation(myTag);
+					double[] tag1Location = ServerAPI.getTagLocation(tag1);
+					double[] tag2Location = ServerAPI.getTagLocation(tag2);
+					double[] relativeTag1Location = new double[] {
+							tag1Location[1] - myLocation[1],
+							-1 * (tag1Location[0] - myLocation[0]) };
+					double[] relativeTag2Location = new double[] {
+							tag2Location[1] - myLocation[1],
+							-1 * (tag2Location[0] - myLocation[0]) };
+					renderer.screen.getShapeMap().get(tag1)
+							.onLocationChanged(relativeTag1Location);
+					renderer.screen.getShapeMap().get(tag2)
+							.onLocationChanged(relativeTag2Location);
+				}
+				}catch(Exception e){
+					break;
+				}
+
+			}
+			return null;
+		}
+	}
+
+	@Override
+	protected void onDestroy() {
+		renderer.dispose();
+		super.onDestroy();
+	}
+
+}
